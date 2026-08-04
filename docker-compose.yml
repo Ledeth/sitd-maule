@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: sitd_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sitd}
+      POSTGRES_USER: ${POSTGRES_USER:-sitd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sitd_dev_only}
+    ports:
+      - "5432:5432"
+    volumes:
+      - sitd_pgdata:/var/lib/postgresql/data
+      # Los .sql de db/init corren en orden alfabético SOLO en el primer arranque
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sitd} -d ${POSTGRES_DB:-sitd}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    container_name: sitd_api
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-sitd}:${POSTGRES_PASSWORD:-sitd_dev_only}@db:5432/${POSTGRES_DB:-sitd}
+      JWT_SECRET: ${JWT_SECRET:-cambiar_en_staging}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 480
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/code
+      # Carpeta donde el usuario deja los shapefiles/GPKG de INE y CONAF (Fase II)
+      - ./data:/data:ro
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  sitd_pgdata:

@@ -1,0 +1,21 @@
+# Datos fuente (INE/CONAF) — nunca versionar
+data/*
+!data/README.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Entorno
+.env
+
+# Node (Fase IV)
+frontend/node_modules/
+frontend/dist/
+
+# SO / editores
+.DS_Store
+.idea/
+.vscode/
