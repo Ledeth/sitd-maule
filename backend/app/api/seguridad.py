@@ -18,13 +18,16 @@ from typing import Optional
 
 import bcrypt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from app.core.config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+# HTTPBearer: el diálogo "Authorize" de /docs pide solo el token,
+# que es lo que realmente usa esta API (el login recibe JSON, no un
+# formulario OAuth2). Evita la inconsistencia del esquema anterior.
+bearer_scheme = HTTPBearer()
 
 # bcrypt no admite secretos de más de 72 bytes; se trunca explícitamente.
 _MAX_BYTES = 72
@@ -64,7 +67,9 @@ def crear_token(datos: DatosToken) -> str:
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
-def usuario_actual(token: str = Depends(oauth2_scheme)) -> DatosToken:
+def usuario_actual(
+    credencial: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> DatosToken:
     """Dependencia FastAPI: decodifica el JWT y devuelve el usuario, o 401."""
     cred_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -73,7 +78,9 @@ def usuario_actual(token: str = Depends(oauth2_scheme)) -> DatosToken:
     )
     try:
         payload = jwt.decode(
-            token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
+            credencial.credentials,
+            settings.jwt_secret,
+            algorithms=[settings.jwt_algorithm],
         )
         correo = payload.get("sub")
         rol = payload.get("rol")

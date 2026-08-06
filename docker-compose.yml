@@ -28,14 +28,29 @@ services:
       JWT_EXPIRE_MINUTES: 480
     ports:
       - "8000:8000"
+      # Puerto del frontend: se expone aquí porque el servicio 'frontend'
+      # comparte la red de 'api' (network_mode: service:api).
+      - "5173:5173"
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - ./backend:/code
-      # Carpeta donde el usuario deja los shapefiles/GPKG de INE y CONAF (Fase II)
+      # Carpeta donde el usuario deja los shapefiles/GPKG de INE y CONAF
       - ./data:/data:ro
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build: ./frontend
+    container_name: sitd_frontend
+    depends_on:
+      - api
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+    # Comparte red con la API para que el proxy de Vite (/api -> localhost:8000)
+    # funcione sin configuración adicional.
+    network_mode: "service:api"
 
 volumes:
   sitd_pgdata:
