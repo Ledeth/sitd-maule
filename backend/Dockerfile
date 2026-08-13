@@ -11,5 +11,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Render (y la mayoría de PaaS) inyectan el puerto por la variable $PORT.
+# En local, si PORT no está definido, cae a 8000.
+ENV PORT=8000
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Sin --reload en producción. Usa sh -c para expandir $PORT en runtime.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

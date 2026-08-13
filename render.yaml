@@ -1,0 +1,20 @@
+# Configuración de despliegue del backend SITD en Render.
+# Render lee este archivo desde la raíz del repositorio (Blueprint).
+services:
+  - type: web
+    name: sitd-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Se configuran manualmente en el dashboard de Render (nunca en el repo).
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRE_MINUTES
+        value: "480"

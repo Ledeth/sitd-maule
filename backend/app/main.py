@@ -1,4 +1,6 @@
 """SITD — API (Fase IV: motor expuesto vía REST con RBAC)."""
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
@@ -12,10 +14,17 @@ app = FastAPI(
     version="0.4.0",
 )
 
-# CORS: permite que el frontend (React en localhost) consuma la API.
+# CORS. En local se permiten los puertos de Vite. En producción, el dominio del
+# frontend se añade vía la variable CORS_ORIGINS (lista separada por comas), para
+# no hardcodear la URL de Vercel en el código.
+origenes = ["http://localhost:3000", "http://localhost:5173"]
+extra = os.getenv("CORS_ORIGINS", "")
+if extra:
+    origenes += [o.strip() for o in extra.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=origenes,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
