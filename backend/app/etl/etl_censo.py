@@ -26,7 +26,7 @@ import geopandas as gpd
 import pandas as pd
 from shapely.validation import explain_validity, make_valid
 
-from catalogo import (
+from app.etl.catalogo import (
     COLUMNAS_JSONB_POR_DIMENSION,
     COLUMNAS_PRIMERA_CLASE,
     COLUMNAS_SECRETO_ESTADISTICO,
@@ -201,32 +201,45 @@ def cargar_a_postgis(df: pd.DataFrame, rechazos: list):
     engine = create_engine(url)
     log(f"\nCargando a la BD ...")
 
+    # Inserción por LOTES: una sola sentencia por bloque de filas, en vez de
+    # una por fila. Sobre una BD remota (Supabase) esto reduce miles de
+    # round-trips de red a unas pocas decenas -> de minutos a segundos.
+    TAMANO_LOTE = 500
+    registros = df.to_dict("records")
+
+    sql_insert = text("""
+        INSERT INTO unidad_censal
+            (id_unidad, codigo_comuna, nombre_comuna, area_tipo,
+             poblacion_total, total_hogares, total_viviendas,
+             atributos_extra, geom)
+        VALUES
+            (:id, :cc, :nom, :area, :pob, :hog, :viv,
+             CAST(:extra AS jsonb),
+             ST_Multi(ST_GeomFromText(:wkt, 32719)))
+        ON CONFLICT (id_unidad) DO NOTHING
+    """)
+
     with engine.begin() as conn:
         conn.execute(text("TRUNCATE unidad_censal CASCADE;"))
-        for _, r in df.iterrows():
-            conn.execute(text("""
-                INSERT INTO unidad_censal
-                    (id_unidad, codigo_comuna, nombre_comuna, area_tipo,
-                     poblacion_total, total_hogares, total_viviendas,
-                     atributos_extra, geom)
-                VALUES
-                    (:id, :cc, :nom, :area, :pob, :hog, :viv,
-                     CAST(:extra AS jsonb),
-                     ST_Multi(ST_GeomFromText(:wkt, 32719)))
-                ON CONFLICT (id_unidad) DO NOTHING
-            """), {
-                "id": r["id_unidad"], "cc": r["codigo_comuna"],
-                "nom": r["nombre_comuna"], "area": r["area_tipo"],
-                "pob": r["poblacion_total"], "hog": r["total_hogares"],
-                "viv": r["total_viviendas"],
-                "extra": r["atributos_extra"], "wkt": r["geom_wkt"],
-            })
-        # Log de rechazos
-        for rej in rechazos:
+        for inicio in range(0, len(registros), TAMANO_LOTE):
+            lote = registros[inicio:inicio + TAMANO_LOTE]
+            conn.execute(sql_insert, [
+                {
+                    "id": r["id_unidad"], "cc": r["codigo_comuna"],
+                    "nom": r["nombre_comuna"], "area": r["area_tipo"],
+                    "pob": r["poblacion_total"], "hog": r["total_hogares"],
+                    "viv": r["total_viviendas"],
+                    "extra": r["atributos_extra"], "wkt": r["geom_wkt"],
+                }
+                for r in lote
+            ])
+            log(f"  ... {min(inicio + TAMANO_LOTE, len(registros))}/{len(registros)} filas")
+
+        if rechazos:
             conn.execute(text("""
                 INSERT INTO etl_log (fuente, id_origen, resultado, causa)
                 VALUES ('INE', :id, 'rechazado', :causa)
-            """), {"id": str(rej["idx"]), "causa": rej["causa"]})
+            """), [{"id": str(rej["idx"]), "causa": rej["causa"]} for rej in rechazos])
 
     log(f"  Carga completa: {len(df)} unidades, {len(rechazos)} rechazos logueados.")
 
