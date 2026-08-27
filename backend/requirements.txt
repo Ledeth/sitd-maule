@@ -9,6 +9,7 @@ geopandas>=0.14
 shapely>=2.0
 pandas>=2.2
 pyproj>=3.6
+pyogrio>=0.7
 
 # Base de datos
 sqlalchemy>=2.0
@@ -17,8 +18,13 @@ psycopg[binary]>=3.1
 
 # Auth
 python-jose[cryptography]>=3.3
-passlib[bcrypt]>=1.7
+bcrypt>=4.0
 python-multipart>=0.0.9
+
+# Informes PDF (HU-27)
+reportlab>=4.0
+matplotlib>=3.8
+# contextily ya no es necesario: el mapa del informe se genera con datos propios
 
 # Testing
 pytest>=8.2

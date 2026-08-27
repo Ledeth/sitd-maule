@@ -14,7 +14,10 @@ la petición. El frontend solo refleja lo que el backend ya garantiza.
 """
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
 
@@ -23,6 +26,7 @@ from app.api.seguridad import (
     DatosToken, crear_token, usuario_actual, verificar_password,
 )
 from app.motor.agregacion import agregar_por_poligono
+from app.motor.informe import generar_informe_pdf
 
 router = APIRouter()
 engine = create_engine(settings.database_url)
@@ -122,3 +126,56 @@ def agregacion(datos: AgregacionIn, usuario: DatosToken = Depends(usuario_actual
 
     resultado["rol_solicitante"] = usuario.rol
     return resultado
+
+
+@router.post("/informe")
+def informe(datos: AgregacionIn, usuario: DatosToken = Depends(usuario_actual)):
+    """Genera el informe territorial en PDF del área indicada.
+
+    Reutiliza exactamente el mismo cálculo que /agregacion (incluido el recorte
+    RBAC para el rol tecnico), de modo que el PDF no puede divergir de lo que
+    muestra el dashboard.
+    """
+    poligono = datos.poligono_wkt
+
+    if usuario.rol == "tecnico":
+        if not usuario.codigo_comuna:
+            raise HTTPException(status_code=403, detail="Técnico sin comuna asignada")
+        with engine.connect() as conn:
+            recortado = conn.execute(text("""
+                SELECT ST_AsText(
+                    ST_Intersection(
+                        ST_GeomFromText(:wkt, 32719),
+                        (SELECT ST_Union(geom) FROM unidad_censal
+                         WHERE codigo_comuna = :cc)
+                    )
+                )
+            """), {"wkt": poligono, "cc": usuario.codigo_comuna}).scalar()
+        if not recortado or recortado.upper().startswith("GEOMETRYCOLLECTION EMPTY"):
+            raise HTTPException(
+                status_code=400,
+                detail="El polígono no intersecta la comuna asignada.",
+            )
+        poligono = recortado
+
+    try:
+        resultado = agregar_por_poligono(engine, poligono)
+        if resultado.get("n_unidades", 0) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="El área no contiene unidades censales; no hay informe que generar.",
+            )
+        pdf = generar_informe_pdf(
+            engine, resultado, poligono, usuario=usuario.correo, rol=usuario.rol
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"No se pudo generar el informe: {e}")
+
+    nombre = f"informe_sitd_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{nombre}"'},
+    )

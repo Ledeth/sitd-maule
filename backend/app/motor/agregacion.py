@@ -25,6 +25,25 @@ from sqlalchemy.engine import Engine
 
 from app.etl.catalogo import INDICADORES, COLUMNAS_JSONB_POR_DIMENSION
 
+# Las geometrías se simplifican antes de enviarlas al navegador. La tolerancia
+# es ADAPTATIVA: mientras más unidades tenga la selección, más agresiva es la
+# simplificación, porque a mayor extensión el usuario está viendo el mapa más
+# alejado y el detalle fino es imperceptible. Así se mantiene el peso de la
+# respuesta acotado sin dejar de resaltar las unidades.
+def tolerancia_para(n_unidades: int) -> float:
+    if n_unidades <= 500:
+        return 5.0      # detalle urbano fino
+    if n_unidades <= 2000:
+        return 15.0
+    if n_unidades <= 6000:
+        return 40.0
+    return 80.0         # vista regional
+
+# Tope duro: por encima de esto ni siquiera la simplificación agresiva evita
+# una respuesta inmanejable para el navegador. Se devuelven los atributos, sin
+# geometrías, y se informa con la bandera 'geometrias_omitidas'.
+LIMITE_GEOMETRIAS = 15000
+
 
 def _sumar_conteos_jsonb(filas_extra: list[dict]) -> dict[str, int]:
     """Suma los conteos del JSONB de todas las unidades seleccionadas.
@@ -63,13 +82,16 @@ def agregar_por_poligono(engine: Engine, poligono_wkt: str) -> dict[str, Any]:
     with engine.connect() as conn:
         # --- 1 y 2. Seleccionar unidades por centroide y traer sus datos ---
         filas = conn.execute(text("""
-            SELECT id_unidad, poblacion_total, total_hogares,
-                   total_viviendas, atributos_extra
+            SELECT id_unidad, nombre_comuna, area_tipo,
+                   poblacion_total, total_hogares,
+                   total_viviendas, atributos_extra,
+                   ROUND((ST_Area(geom) / 10000)::numeric, 2) AS hectareas
             FROM unidad_censal
             WHERE ST_Within(
                 centroide,
                 ST_GeomFromText(:wkt, 32719)
             )
+            ORDER BY poblacion_total DESC
         """), {"wkt": poligono_wkt}).mappings().all()
 
         n_unidades = len(filas)
@@ -133,6 +155,63 @@ def agregar_por_poligono(engine: Engine, poligono_wkt: str) -> dict[str, Any]:
         for r in suelo_rows
     ]
 
+    # --- 5. Unidades seleccionadas: atributos para la tabla y geometrías
+    #        para resaltarlas en el mapa (ADR-001: el usuario debe VER qué
+    #        unidades se agregaron, no solo el polígono que dibujó). ---
+    omitir_geometrias = n_unidades > LIMITE_GEOMETRIAS
+
+    unidades = [
+        {
+            "id_unidad": f["id_unidad"],
+            "comuna": f["nombre_comuna"],
+            "tipo": f["area_tipo"],
+            "poblacion": f["poblacion_total"],
+            "hogares": f["total_hogares"],
+            "viviendas": f["total_viviendas"],
+            "hectareas": float(f["hectareas"]) if f["hectareas"] is not None else None,
+        }
+        for f in filas
+    ]
+
+    geojson = None
+    if not omitir_geometrias:
+        # Segunda consulta, solo geometrías, con la tolerancia adecuada al
+        # tamaño de la selección. Separarla mantiene liviana la consulta de
+        # atributos y permite elegir la tolerancia ya conociendo n_unidades.
+        tol = tolerancia_para(n_unidades)
+        with engine.connect() as conn:
+            geoms = conn.execute(text("""
+                SELECT id_unidad,
+                       ST_AsGeoJSON(
+                           ST_Transform(
+                               ST_SimplifyPreserveTopology(geom, :tol), 4326
+                           ), 5
+                       ) AS gj
+                FROM unidad_censal
+                WHERE ST_Within(centroide, ST_GeomFromText(:wkt, 32719))
+            """), {"wkt": poligono_wkt, "tol": tol}).mappings().all()
+
+        atributos = {f["id_unidad"]: f for f in filas}
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": json.loads(g["gj"]),
+                    "properties": {
+                        "id_unidad": g["id_unidad"],
+                        "comuna": atributos[g["id_unidad"]]["nombre_comuna"],
+                        "tipo": atributos[g["id_unidad"]]["area_tipo"],
+                        "poblacion": atributos[g["id_unidad"]]["poblacion_total"],
+                        "hogares": atributos[g["id_unidad"]]["total_hogares"],
+                        "viviendas": atributos[g["id_unidad"]]["total_viviendas"],
+                    },
+                }
+                for g in geoms
+                if g["gj"] and g["id_unidad"] in atributos
+            ],
+        }
+
     return {
         "n_unidades": n_unidades,
         "poblacion_total": totales["n_per"],
@@ -141,5 +220,8 @@ def agregar_por_poligono(engine: Engine, poligono_wkt: str) -> dict[str, Any]:
         "indicadores": indicadores,
         "uso_suelo": uso_suelo,
         "superficie_total_ha": round(total_ha, 2),
+        "unidades": unidades,
+        "geojson": geojson,
+        "geometrias_omitidas": omitir_geometrias,
         "duracion_ms": round((time.perf_counter() - t0) * 1000, 1),
     }
