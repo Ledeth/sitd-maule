@@ -6,6 +6,11 @@ planificación inicial.
 
 ---
 
+> El seguimiento se lleva en un **tablero Kanban en GitHub Projects**
+> (*Tablero Kanban SITD Maule*), que es la fuente de verdad del avance. El
+> documento `PRODUCT_BACKLOG.md` formaliza ese tablero con épicas, estimación y
+> trazabilidad.
+
 ## 1. Enfoque metodológico híbrido
 
 Conforme a la justificación de la Tabla 2 del documento de tesis, el proyecto
@@ -116,53 +121,53 @@ Story points pendientes a lo largo de la ejecución efectiva del desarrollo de
 software. La línea ideal desciende uniformemente (plan); la real refleja el
 arranque concentrado tras la postergación.
 
-**Total de trabajo:** 160 story points (35 historias de usuario).
+**Total de trabajo:** 156 story points (31 ítems: 29 historias de usuario y 2 hitos de gestión).
 
 ```
 SP
 pendientes
-160 |●─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   ← inicio (31-07)
-    | ●╲
-146 |   ●╲             ── Línea ideal (planificada)
-    |     ╲╲           ●● Línea real (ejecución intensiva)
-102 |      ●╲╲
-    |        ╲ ╲
- 73 |         ╲ ╲
-    |          ╲ ●╲
- 44 |           ╲   ●___
-    |            ╲      ●_____●______
- 19 |             ╲                  ●_____●   ← 27-08 (93%)
-    |              ╲
-  0 |───────────────╲──────────────────────────
-    31-07  03-08  05-08  13-08  16-08  26-08  27-08
+156 |●─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   ← inicio (31-07)
+    |  ╲
+135 |  ●╲            ── Línea ideal (planificada, 11 semanas)
+    |    ╲╲          ●● Línea real (ejecución concentrada)
+ 94 |     ●╲╲
+    |       ╲ ╲
+ 62 |        ╲ ╲
+    |         ╲ ╲
+ 34 |          ●╲ ╲
+    |            ╲  ╲
+ 29 |             ●___●________
+ 16 |                          ●   ← 27-08 (90%)
+    |
+  0 |──────────────────────────────────────────
+    31-07   03-08   05-08      13-08      27-08
 ```
 
 ### Datos del burndown
 
 | Fecha | SP completados | SP pendientes | % avance |
 |---|---|---|---|
-| 31-07 | 0 | 160 | 0% |
-| 01-08 | 14 | 146 | 9% |
-| 03-08 | 58 | 102 | 36% |
-| 05-08 | 116 | 44 | 73% |
-| 13-08 | 128 | 32 | 80% |
-| 16-08 | 133 | 27 | 83% |
-| 26-08 | 141 | 19 | 88% |
-| 27-08 | 149 | 11 | 93% |
+| 31-07 | 0 | 156 | 0% |
+| 01-08 | 21 | 135 | 13% |
+| 03-08 | 62 | 94 | 40% |
+| 05-08 | 122 | 34 | 78% |
+| 13-08 | 127 | 29 | 81% |
+| 27-08 | 140 | 16 | 90% |
 
 ---
 
 ## 5. Velocidad y análisis
 
-- **Trabajo completado:** 149 SP de 160 (93%).
+- **Trabajo completado:** 140 SP de 156 (90%); 27 de 31 ítems en estado *Listo*.
 - **Concentración:** el 73% se completó en los primeros 6 días (Épicas 1-4 más
   el grueso de la 5: el núcleo funcional del MVP).
 - **Segunda fase (13-08 al 27-08):** despliegue de la base en la nube,
   refinamiento de la interfaz (resaltado de unidades, tabla de atributos,
   traducción) e informe PDF. Trabajo de menor volumen pero alto valor de uso.
 - **Núcleo del MVP (OE1 + OE2):** 100% completo y verificado.
-- **Pendiente (11 SP):** medición SUS con usuarios reales (HU-32) y despliegue
-  en nube de API y frontend (Épica 6), fuera del alcance original de la tesis.
+- **Pendiente (16 SP):** refinamiento de la interfaz cartográfica (HU-27),
+  gráfico de uso de suelo (HU-28) y cierre documental (HG-01, HG-02). La
+  medición SUS del OE3 requiere usuarios reales y no es automatizable.
 
 **Interpretación honesta:** la alta velocidad se explica por (a) el uso de
 herramientas de asistencia declaradas en la Declaración de Uso de IA de la tesis,
