@@ -44,6 +44,16 @@ L.drawLocal.edit.handlers.edit.tooltip.text = 'Arrastra los vértices para ajust
 L.drawLocal.edit.handlers.edit.tooltip.subtext = 'Pulsa Cancelar para descartar los cambios'
 L.drawLocal.edit.handlers.remove.tooltip.text = 'Haz clic en el área para borrarla'
 
+// Límites de la Región del Maule, calculados sobre la propia capa censal
+// (18.653 unidades) y ampliados ~15 km para dejar aire en los bordes. Acotar
+// la vista evita que el usuario navegue fuera del territorio con datos, donde
+// el sistema no tendría nada que responder.
+const LIMITES_MAULE = L.latLngBounds(
+  L.latLng(-36.694, -72.936),   // suroeste
+  L.latLng(-34.535, -70.162),   // noreste
+)
+const ZOOM_MINIMO = 8            // por debajo se saldría de la región
+
 const ESTILO_DIBUJO = {          // el polígono que trazó el usuario
   color: '#0ea5e9', weight: 2, dashArray: '6 4', fill: false,
 }
@@ -71,9 +81,17 @@ export default function Dashboard({ token, rol, onSalir }) {
   useEffect(() => {
     if (mapaRef.current) return
 
-    const mapa = L.map(contenedor.current).setView([-35.43, -71.65], 9)
+    const mapa = L.map(contenedor.current, {
+      maxBounds: LIMITES_MAULE,      // no se puede arrastrar fuera de la región
+      maxBoundsViscosity: 0.9,       // el borde "resiste" al arrastrar
+      minZoom: ZOOM_MINIMO,
+      maxZoom: 18,
+    })
+    mapa.fitBounds(LIMITES_MAULE)    // abre encuadrado en la región completa
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap', maxZoom: 18,
+      bounds: LIMITES_MAULE,         // no pide teselas fuera del área de interés
     }).addTo(mapa)
 
     // Dos capas separadas: el trazo del usuario y las unidades resultantes.
@@ -233,6 +251,16 @@ export default function Dashboard({ token, rol, onSalir }) {
             ref={contenedor}
             style={{ position: 'absolute', inset: 0, height: '100%', width: '100%' }}
           />
+          <button
+            onClick={() => mapaRef.current?.fitBounds(LIMITES_MAULE)}
+            className="absolute top-4 right-4 z-[1000] bg-white/95 hover:bg-white
+                       border border-slate-300 rounded px-3 py-1.5 text-xs
+                       text-slate-700 shadow transition"
+            title="Volver a la vista de toda la región"
+          >
+            Ver toda la región
+          </button>
+
           <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 border border-slate-200
                           rounded px-3 py-2 text-xs text-slate-700 shadow max-w-xs">
             {!informe && 'Dibuja un polígono o rectángulo con las herramientas de la izquierda.'}
