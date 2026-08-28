@@ -104,14 +104,14 @@ documentación transparente constituye una práctica de gestión profesional.
 
 | Fecha | Hito | Épicas / Historias |
 |---|---|---|
-| 31-07-2026 | Infraestructura: Docker, WSL2, PostgreSQL/PostGIS, esquema espacial, Git/GitHub | Épica 1 (HU-01 a HU-04) |
-| 01-08 a 03-08 | ETL: carga Censo 2024, validación topológica, carga CONAF, cruce materializado | Épica 2 (HU-05 a HU-11) |
-| 03-08 a 05-08 | Motor de agregación elástica + verificación OE1/OE2 | Épica 3 (HU-12 a HU-16) |
-| 05-08 | API REST con JWT y RBAC territorial; dashboard React | Épicas 4 y 5 (HU-17 a HU-26) |
-| 13-08 | Migración a Supabase; despliegue API en Render; documentación técnica | Épica 6 (HU-29 a HU-30) |
+| 31-07-2026 | Infraestructura: Docker, WSL2, PostgreSQL/PostGIS, esquema espacial, Git/GitHub | Épica 1 (HU-01 a HU-06) |
+| 01-08 a 03-08 | ETL: carga Censo 2024, validación topológica, carga CONAF, cruce materializado | Épica 2 (HU-07 a HU-13) |
+| 03-08 a 05-08 | Motor de agregación elástica + verificación OE1/OE2 | Épica 3 (HU-14 a HU-18) |
+| 05-08 | API REST con JWT y RBAC territorial; dashboard React | Épicas 4 y 5 (HU-19 a HU-25) |
+| 13-08 | Migración de la base a Supabase; documentación técnica | Épica 6 (HU-29) |
 | 16-08 | Formalización metodológica (backlog, burndown) | Documentación |
-| 26-08 | Resaltado de unidades en el mapa, tabla de atributos, interfaz en español | Épica 5 (HU-27, HU-28, HU-30) |
-| 27-08 | Informe PDF territorial con mapa propio y anexo de identificadores | Épica 5 (HU-31) |
+| 26-08 | Resaltado de unidades seleccionadas, tabla de atributos, interfaz en español | Épica 5 (HU-27) |
+| 27-08 | Informe PDF territorial con mapa propio y anexo de identificadores | Épica 5 (HU-26) |
 
 ---
 
