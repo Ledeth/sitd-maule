@@ -173,10 +173,11 @@ incorporación laboral) y se concentró en un período intensivo, en lugar de la
 semanas planificadas. La desviación fue **temporal, no de alcance**: todos los OE
 se cumplieron. Documentado transparentemente en `METODOLOGIA_Y_EJECUCION.md`.
 
-**Product Backlog:** 35 historias, 160 story points, 93% completado (149 SP).
-
----
-
+**Product Backlog:** 31 historias de usuario, 151 story points, **93% completado**
+(141 SP); 29 de 31 en estado *Listo*. Épicas: Infraestructura (14 SP), ETL (41),
+Motor Analítico (29), Frontend e Interfaz (54), Despliegue (13). Fuente de verdad:
+**tablero Kanban en GitHub Projects**; `PRODUCT_BACKLOG.md` lo formaliza con
+prioridad MoSCoW y trazabilidad con OE y ADR.
 ## 11. Estado actual del sistema
 
 | Componente | Local (Docker) | Nube |
@@ -265,7 +266,7 @@ docs `localhost:8000/docs`
 | `DESPLIEGUE_NUBE.md` | Guía de despliegue en Supabase / Render / Vercel |
 | `decisiones.md` | ADRs originales de Fase I |
 | `MIGRACION.md` | Refactor a `unidad_censal` + umbral adaptativo |
-| `PRODUCT_BACKLOG.md` | 35 historias, 6 épicas, story points, trazabilidad con los OE |
+| `PRODUCT_BACKLOG.md` | 31 historias en 5 épicas, story points, trazabilidad con OE y ADR, correspondencia commits↔historias |
 | `CONTEXTO_MAESTRO.md` | Este documento: contexto completo del proyecto |
 
 ---
@@ -282,10 +283,13 @@ docs `localhost:8000/docs`
 6. ⏳ Manual de usuario
 7. ⏳ Manual de proyecto/técnico (base: `DOCUMENTACION_TECNICA.md`)
 
-**Técnicos:**
-- Medición SUS con usuarios reales (OE3) — único pendiente del alcance original
-- (Opcional, fuera de alcance) Diagnosticar el deploy fallido en Render
-- (Opcional, fuera de alcance) Desplegar frontend en Vercel
+**Pendientes del tablero Kanban:**
+- HU-30 (en progreso): empaquetar el sistema con Docker Compose
+- HU-31 (backlog): consolidar código en `main` con documentación técnica
+
+**Otros técnicos:**
+- Medición SUS con usuarios reales (OE3) — no automatizable
+- (Fuera de alcance) Deploy de API en Render y frontend en Vercel
 
 **Correcciones sugeridas al documento de tesis:**
 1. "Microservicios" → es arquitectura contenedorizada de tres capas con BD centralizada

@@ -107,11 +107,11 @@ documentación transparente constituye una práctica de gestión profesional.
 | 31-07-2026 | Infraestructura: Docker, WSL2, PostgreSQL/PostGIS, esquema espacial, Git/GitHub | Épica 1 (HU-01 a HU-06) |
 | 01-08 a 03-08 | ETL: carga Censo 2024, validación topológica, carga CONAF, cruce materializado | Épica 2 (HU-07 a HU-13) |
 | 03-08 a 05-08 | Motor de agregación elástica + verificación OE1/OE2 | Épica 3 (HU-14 a HU-18) |
-| 05-08 | API REST con JWT y RBAC territorial; dashboard React | Épicas 4 y 5 (HU-19 a HU-25) |
-| 13-08 | Migración de la base a Supabase; documentación técnica | Épica 6 (HU-29) |
+| 05-08 | API REST con JWT y RBAC territorial; dashboard React | Épica 4 (HU-19 a HU-25) |
+| 13-08 | Migración de la base a Supabase; documentación técnica | Épica 5 (HU-06, HU-29) |
 | 16-08 | Formalización metodológica (backlog, burndown) | Documentación |
-| 26-08 | Resaltado de unidades seleccionadas, tabla de atributos, interfaz en español | Épica 5 (HU-27) |
-| 27-08 | Informe PDF territorial con mapa propio y anexo de identificadores | Épica 5 (HU-26) |
+| 26-08 | Resaltado de unidades seleccionadas, tabla de atributos, interfaz en español | Épica 4 (HU-27) |
+| 27-08 | Informe PDF territorial con mapa propio y anexo de identificadores | Épica 4 (HU-26, HU-28) |
 
 ---
 
@@ -121,23 +121,23 @@ Story points pendientes a lo largo de la ejecución efectiva del desarrollo de
 software. La línea ideal desciende uniformemente (plan); la real refleja el
 arranque concentrado tras la postergación.
 
-**Total de trabajo:** 156 story points (31 ítems: 29 historias de usuario y 2 hitos de gestión).
+**Total de trabajo:** 151 story points (31 historias de usuario), según el tablero Kanban.
 
 ```
 SP
 pendientes
-156 |●─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   ← inicio (31-07)
+151 |●─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   ← inicio (31-07)
     |  ╲
-135 |  ●╲            ── Línea ideal (planificada, 11 semanas)
+139 |  ●╲            ── Línea ideal (planificada, 11 semanas)
     |    ╲╲          ●● Línea real (ejecución concentrada)
- 94 |     ●╲╲
+ 96 |     ●╲╲
     |       ╲ ╲
- 62 |        ╲ ╲
+ 55 |        ╲ ╲
     |         ╲ ╲
- 34 |          ●╲ ╲
+ 37 |          ●╲ ╲
     |            ╲  ╲
  29 |             ●___●________
- 16 |                          ●   ← 27-08 (90%)
+ 10 |                          ●   ← 27-08 (93%)
     |
   0 |──────────────────────────────────────────
     31-07   03-08   05-08      13-08      27-08
@@ -147,27 +147,28 @@ pendientes
 
 | Fecha | SP completados | SP pendientes | % avance |
 |---|---|---|---|
-| 31-07 | 0 | 156 | 0% |
-| 01-08 | 21 | 135 | 13% |
-| 03-08 | 62 | 94 | 40% |
-| 05-08 | 122 | 34 | 78% |
-| 13-08 | 127 | 29 | 81% |
-| 27-08 | 140 | 16 | 90% |
+| 31-07 | 0 | 151 | 0% |
+| 01-08 | 12 | 139 | 8% |
+| 03-08 | 55 | 96 | 36% |
+| 05-08 | 114 | 37 | 75% |
+| 13-08 | 122 | 29 | 81% |
+| 27-08 | 141 | 10 | 93% |
 
 ---
 
 ## 5. Velocidad y análisis
 
-- **Trabajo completado:** 140 SP de 156 (90%); 27 de 31 ítems en estado *Listo*.
+- **Trabajo completado:** 141 SP de 151 (93%); 29 de 31 historias en estado *Listo*.
 - **Concentración:** el 73% se completó en los primeros 6 días (Épicas 1-4 más
   el grueso de la 5: el núcleo funcional del MVP).
 - **Segunda fase (13-08 al 27-08):** despliegue de la base en la nube,
   refinamiento de la interfaz (resaltado de unidades, tabla de atributos,
   traducción) e informe PDF. Trabajo de menor volumen pero alto valor de uso.
 - **Núcleo del MVP (OE1 + OE2):** 100% completo y verificado.
-- **Pendiente (16 SP):** refinamiento de la interfaz cartográfica (HU-27),
-  gráfico de uso de suelo (HU-28) y cierre documental (HG-01, HG-02). La
-  medición SUS del OE3 requiere usuarios reales y no es automatizable.
+- **Pendiente (10 SP):** empaquetado del sistema (HU-30) y consolidación del
+  código con documentación técnica (HU-31), ambos de cierre de proyecto. Las
+  cuatro épicas funcionales están completas. La medición SUS del OE3 requiere
+  usuarios reales y no es automatizable.
 
 **Interpretación honesta:** la alta velocidad se explica por (a) el uso de
 herramientas de asistencia declaradas en la Declaración de Uso de IA de la tesis,
